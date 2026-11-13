@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "2027高考基础学习进度表",
+  "short_name": "高考进度表",
+  "description": "基础学习视频时长、五科进度、每日要求和历史趋势",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f6fa",
+  "theme_color": "#f5f7fb",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
