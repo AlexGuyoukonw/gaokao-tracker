@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f7fb">
+<meta name="application-name" content="2027高考基础学习进度表">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="高考进度表">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>2027高考｜基础学习进度表</title>
+<style>
+  :root{
+    --bg:#f4f6fa;--panel:#fff;--text:#172033;--muted:#718096;--line:#e7ebf2;
+    --blue:#315bd6;--blue-soft:#edf2ff;--green:#15966a;--green-soft:#e8f7f0;
+    --red:#d94b4b;--red-soft:#fff0f0;--amber:#b77c1d;--shadow:0 8px 28px rgba(29,45,82,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.5}
+  .wrap{width:min(1180px,calc(100% - 36px));margin:30px auto 48px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+  h1{margin:0;font-size:27px;letter-spacing:-.5px;font-weight:760}
+  .subtitle{color:var(--muted);font-size:13px;margin-top:5px}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #dce4fa;background:#f0f4ff;color:#3456b7;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:650;white-space:nowrap}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:#344054;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:650;transition:.15s}
+  button:hover{border-color:#b9c7e8;transform:translateY(-1px)}
+  button.primary{background:var(--blue);border-color:var(--blue);color:white}
+  button.ghost-red{color:#b33c3c;border-color:#f0d4d4;background:#fffafa}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .kpi{padding:17px 18px;min-height:108px}
+  .kpi-label{font-size:12px;color:var(--muted);font-weight:650}
+  .kpi-value{font-size:25px;font-weight:780;letter-spacing:-.7px;margin-top:9px;white-space:nowrap}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .main-grid{display:grid;grid-template-columns:1.03fr 1fr;gap:14px;margin-bottom:14px}
+  .pace{padding:21px 22px;position:relative;overflow:hidden}
+  .section-kicker{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px}
+  .pace-title{font-size:14px;font-weight:700;margin-top:9px}
+  .pace-value{font-size:39px;line-height:1.15;font-weight:800;letter-spacing:-1.4px;margin-top:8px}
+  .pace-value.down{color:var(--green)}.pace-value.up{color:var(--red)}.pace-value.neutral{color:var(--text)}
+  .pace-change{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 9px;border-radius:8px;font-size:12px;font-weight:700}
+  .pace-change.down{background:var(--green-soft);color:var(--green)}.pace-change.up{background:var(--red-soft);color:var(--red)}.pace-change.neutral{background:#f1f3f7;color:#596579}
+  .pace-note{font-size:11px;color:var(--muted);margin-top:13px;max-width:520px}
+  .pace-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+  .mini{background:#f7f8fb;border:1px solid #edf0f5;border-radius:11px;padding:10px 12px}
+  .mini span{display:block;font-size:11px;color:var(--muted)}.mini strong{display:block;font-size:16px;margin-top:3px;font-weight:750}
+  .chart-panel{padding:18px 18px 14px;min-width:0}
+  .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .chart-title{font-size:14px;font-weight:750}.chart-desc{font-size:11px;color:var(--muted);margin-top:3px}
+  .legend{display:flex;gap:11px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:9px}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+  #trendChart{width:100%;height:210px;display:block;margin-top:6px;overflow:visible}
+  .subjects-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:25px 2px 11px}
+  .subjects-head h2{margin:0;font-size:18px}.subjects-head p{margin:3px 0 0;font-size:11px;color:var(--muted)}
+  .subject-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .subject{padding:17px 18px}
+  .subject-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .subject-name{font-size:16px;font-weight:780}.subject-percent{font-size:20px;font-weight:800;color:var(--blue)}
+  .subject-times{display:flex;justify-content:space-between;gap:10px;margin-top:8px;color:var(--muted);font-size:11px}
+  .bar{height:8px;background:#edf0f5;border-radius:999px;margin-top:10px;overflow:hidden}.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#5379ec,#315bd6);border-radius:999px;transition:width .25s ease}
+  .add-row{display:flex;gap:8px;margin-top:14px}
+  .duration{min-width:0;flex:1;border:1px solid #dce2eb;border-radius:9px;padding:9px 10px;font:inherit;font-size:13px;color:var(--text);outline:none;background:#fff}
+  .duration:focus{border-color:#7894ed;box-shadow:0 0 0 3px #315bd615}
+  .add-btn{padding:8px 13px;min-width:66px}
+  .hint{font-size:10px;color:#98a2b3;margin-top:6px}
+  .bottom-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+  .log-panel{padding:17px 18px}
+  .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .panel-heading h3{font-size:14px;margin:0}.muted-small{font-size:10px;color:var(--muted)}
+  .log-list{margin-top:10px;max-height:220px;overflow:auto}
+  .log-item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #f0f2f6;font-size:12px}
+  .log-item:last-child{border-bottom:0}.log-main{font-weight:650}.log-date{font-size:10px;color:var(--muted);margin-top:2px}.log-add{font-weight:750;color:var(--green);white-space:nowrap}.empty{font-size:12px;color:#98a2b3;padding:18px 0;text-align:center}
+    .log-actions{display:flex;align-items:center;gap:8px}
+  .log-actions button{font-size:11px;padding:6px 9px}
+  .footer{font-size:10px;color:#98a2b3;text-align:center;margin-top:19px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#1d2939;color:#fff;padding:10px 15px;border-radius:10px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:10;box-shadow:0 8px 25px #0002}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  @media(max-width:850px){.kpis{grid-template-columns:repeat(2,1fr)}.main-grid,.bottom-grid{grid-template-columns:1fr}}
+  @media(max-width:580px){.wrap{width:calc(100% - 20px);margin:17px auto 30px}.top{display:block}.actions{justify-content:flex-start;margin-top:14px}h1{font-size:23px}.kpi{padding:14px;min-height:96px}.kpi-value{font-size:20px}.pace{padding:18px}.pace-value{font-size:33px}.subject-grid{grid-template-columns:1fr}.subject{padding:15px}.subjects-head{margin-top:20px}.chart-panel{padding:15px 12px}#trendChart{height:190px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>2027 高考 · 基础学习进度表</h1>
+      <div class="subtitle">只统计基础学习视频时长｜首次打开自动开始207天周期｜每次录入后即时结算</div>
+      <div style="margin-top:10px"><span class="pill">● 默认207天 · 基础学习专用 · 不含一轮 / 二轮</span></div>
+    </div>
+    <div class="actions">
+      <button id="resetBtn" class="ghost-red">重置进度</button>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <div class="panel kpi"><div class="kpi-label">基础学习总时长</div><div class="kpi-value" id="totalTime">—</div><div class="kpi-sub">五科合计 · 只计算一次</div></div>
+    <div class="panel kpi"><div class="kpi-label">已完成视频时长</div><div class="kpi-value" id="doneTime">—</div><div class="kpi-sub" id="doneSub">累计录入的学习时间</div></div>
+    <div class="panel kpi"><div class="kpi-label">剩余视频时长</div><div class="kpi-value" id="leftTime">—</div><div class="kpi-sub">按各科目标时长扣减</div></div>
+    <div class="panel kpi"><div class="kpi-label">总完成率</div><div class="kpi-value" id="totalPercent">0.00%</div><div class="kpi-sub">五科已完成 ÷ 五科总时长</div></div>
+  </section>
+
+  <section class="main-grid">
+    <div class="panel pace">
+      <div class="section-kicker">动态进度结算</div>
+      <div class="pace-title" id="paceTitle">假设今天此刻结束学习，之后每天需要完成</div>
+      <div class="pace-value neutral" id="paceValue">—</div>
+      <div class="pace-change neutral" id="paceChange">与初始目标持平</div>
+      <div class="pace-note" id="paceNote">每次录入都会立即更新。今天学得越多，未来日均要求越低；某天结束时进度不足，次日要求会升高。</div>
+      <div class="pace-stats">
+        <div class="mini"><span>最初每日目标</span><strong id="initialPace">—</strong></div>
+        <div class="mini"><span>剩余备考天数（含今天）</span><strong id="daysLeft">—</strong></div>
+        <div class="mini"><span>今日已录入</span><strong id="todayDone">0分钟</strong></div>
+        <div class="mini"><span>当前累计完成率</span><strong id="miniPercent">0.00%</strong></div>
+      </div>
+    </div>
+
+    <div class="panel chart-panel">
+      <div class="chart-head">
+        <div><div class="chart-title">未来日均要求变化</div><div class="chart-desc">按每天的实际累计进度结算；越低越好</div></div>
+        <div class="muted-small" id="chartRange">进度趋势</div>
+      </div>
+      <div class="legend"><span><i style="background:#15966a"></i>要求下降（进度领先）</span><span><i style="background:#d94b4b"></i>要求上升（进度落后）</span><span><i style="background:#b58b39"></i>初始目标</span></div>
+      <svg id="trendChart" viewBox="0 0 720 220" role="img" aria-label="未来日均网课时间变化趋势图"></svg>
+    </div>
+  </section>
+
+  <div class="subjects-head">
+    <div><h2>各科基础学习进度</h2><p>在每科输入本次看完的网课时长，点击“＋记录”即可即时结算。</p></div>
+    <div class="muted-small">时间格式：1:30 = 1小时30分</div>
+  </div>
+  <section class="subject-grid" id="subjectGrid"></section>
+
+  <section class="bottom-grid">
+    <div class="panel log-panel">
+      <div class="panel-heading"><h3>最近学习记录</h3><div class="log-actions"><span class="muted-small" id="logCount">0条记录</span><button id="undoBtn">撤销最近一条</button></div></div>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </section>
+  <div class="footer">默认从首次打开当天开始统计，周期为207天；学习进度自动保存在当前浏览器。基础学习统计口径：语文第一版 · 数学 · 物理 · 化学 · 生物。</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY = 'gaokao_base_learning_tracker_v1';
+  const BACKUP_KEY = 'gaokao_base_learning_tracker_backup_v1';
+  const DB_NAME = 'gaokao_base_learning_tracker_db';
+  const DB_STORE = 'snapshots';
+  const DB_RECORD = 'latest';
+  const SUBJECTS = [
+    { id:'chinese', name:'语文', total:92*3600+10*60+25, color:'#9a5bc2' },
+    { id:'math', name:'数学', total:114*3600+54*60+39, color:'#3973c9' },
+    { id:'physics', name:'物理', total:217*3600+12*60+46, color:'#218e9b' },
+    { id:'chemistry', name:'化学', total:149*3600+6*60+5, color:'#d18b35' },
+    { id:'biology', name:'生物', total:88*3600+27*60+29, color:'#38976a' }
+  ];
+  const TOTAL = SUBJECTS.reduce((s,x)=>s+x.total,0);
+  const DEFAULT_DAYS = 207;
+  const $ = id => document.getElementById(id);
+  let state;
+  let toastTimer;
+
+  function localDate(d=new Date()) {
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function dateFromString(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d,12,0,0); }
+  function addDays(dateString,n) { const d=dateFromString(dateString); d.setDate(d.getDate()+n); return localDate(d); }
+  function dayDiff(a,b) { return Math.round((dateFromString(b)-dateFromString(a))/86400000); }
+  function validState(v) {
+    return !!(v && Array.isArray(v.logs) && typeof v.startDate==='string' && Number.isFinite(v.cycleDays)
+      && v.logs.every(l=>l && typeof l.subjectId==='string' && Number.isFinite(l.seconds) && l.seconds>0 && typeof l.date==='string'));
+  }
+  function loadLocalState() {
+    const candidates=[];
+    for(const key of [STORAGE_KEY,BACKUP_KEY]) {
+      try { const raw=localStorage.getItem(key); if(raw) { const v=JSON.parse(raw); if(validState(v)) candidates.push(v); } }
+      catch(e) { console.warn('本地快照读取失败：'+key,e); }
+    }
+    candidates.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+    return candidates[0] || null;
+  }
+  function openBackupDB() {
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)) return reject(new Error('IndexedDB不可用'));
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>{ const db=req.result; if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE); };
+      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('数据库打开失败'));
+    });
+  }
+  async function readIndexedBackup() {
+    const db=await openBackupDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(DB_STORE,'readonly'), req=tx.objectStore(DB_STORE).get(DB_RECORD);
+      req.onsuccess=()=>{ const v=req.result; db.close(); resolve(validState(v)?v:null); };
+      req.onerror=()=>{ db.close(); reject(req.error||new Error('备份读取失败')); };
+    });
+  }
+  function saveIndexedBackup(snapshot) {
+    openBackupDB().then(db=>new Promise((resolve,reject)=>{
+      const tx=db.transaction(DB_STORE,'readwrite'); tx.objectStore(DB_STORE).put(snapshot,DB_RECORD);
+      tx.oncomplete=()=>{db.close();resolve();}; tx.onerror=()=>{db.close();reject(tx.error||new Error('备份写入失败'));};
+      tx.onabort=()=>{db.close();reject(tx.error||new Error('备份写入中断'));};
+    })).catch(e=>console.warn('IndexedDB自动备份失败',e));
+  }
+  function saveState() {
+    state.updatedAt=Date.now();
+    const snapshot=JSON.stringify(state);
+    let saved=0;
+    for(const key of [STORAGE_KEY,BACKUP_KEY]) {
+      try { localStorage.setItem(key,snapshot); saved++; }
+      catch(e) { console.warn('本地快照保存失败：'+key,e); }
+    }
+    saveIndexedBackup(state);
+    if(saved===0) showToast('浏览器本地存储失败：请勿关闭页面，当前进度可能无法保存。');
+  }
+  async function recoverFromIndexedBackup() {
+    // Finish recovery BEFORE the first render/save. Otherwise an empty default
+    // state could be written to IndexedDB and race with the older good backup.
+    try {
+      const backup=await readIndexedBackup();
+      if(backup && (!validState(state) || (backup.updatedAt||0)>(state.updatedAt||0))) {
+        state=backup;
+        const snapshot=JSON.stringify(state);
+        try { localStorage.setItem(STORAGE_KEY,snapshot); } catch(e) {}
+        try { localStorage.setItem(BACKUP_KEY,snapshot); } catch(e) {}
+        return true;
+      }
+    } catch(e) { console.warn('IndexedDB恢复检查失败',e); }
+    return false;
+  }
+  function progressMap() {
+    const map={}; SUBJECTS.forEach(s=>map[s.id]=0);
+    state.logs.forEach(l=>{ if(map[l.subjectId]!==undefined) map[l.subjectId]+=l.seconds; });
+    return map;
+  }
+  function totalDone(map=progressMap()) { return Object.values(map).reduce((a,b)=>a+b,0); }
+  function remainingDays(onDate=localDate()) {
+    const elapsed=dayDiff(state.startDate,onDate);
+    return Math.max(0,state.cycleDays-elapsed);
+  }
+  function currentRate(done) {
+    const days=remainingDays();
+    const left=Math.max(0,TOTAL-done);
+    if(days<=0) return {value:null,days,left,status:'overdue'};
+    const today=localDate();
+    const todayDone=state.logs.filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
+    // On a fresh day, today's time is still available: include today in the divisor.
+    // Once the user records today's study, calculate the pace needed after today ends.
+    const divisor=todayDone>0 ? days-1 : days;
+    if(divisor<=0) return {value:left,days,left,status:'lastday'};
+    return {value:left/divisor,days,left,status:'normal'};
+  }
+  function fmt(sec) {
+    sec=Math.max(0,Math.round(sec||0));
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+    if(h>0) return `${h}小时${m}分${String(s).padStart(2,'0')}秒`;
+    if(m>0) return `${m}分${String(s).padStart(2,'0')}秒`;
+    return `${s}秒`;
+  }
+  function fmtAxis(sec) {
+    sec=Math.max(0,Math.round(sec||0));
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+    return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function fmtClock(sec) {
+    sec=Math.max(0,Math.round(sec||0));
+    const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+    return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function pct(a,b) { return b>0 ? Math.min(100,Math.max(0,a/b*100)) : 0; }
+  function parseDuration(value) {
+    const v=String(value||'').trim();
+    if(!v) return null;
+    if(/^\d+(\.\d+)?$/.test(v)) {
+      const n=Number(v); if(!Number.isFinite(n)||n<=0) return null;
+      return Math.round(n*3600);
+    }
+    const parts=v.split(':');
+    if((parts.length!==2 && parts.length!==3) || !parts.every(x=>/^\d+$/.test(x))) return null;
+    const nums=parts.map(Number);
+    if(nums[1]>59 || (parts.length===3 && nums[2]>59)) return null;
+    const sec=parts.length===2 ? nums[0]*3600+nums[1]*60 : nums[0]*3600+nums[1]*60+nums[2];
+    return sec>0?sec:null;
+  }
+  function showToast(msg) {
+    const t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2300);
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function renderSubjects(map) {
+    $('subjectGrid').innerHTML=SUBJECTS.map(s=>{
+      const done=map[s.id], left=Math.max(0,s.total-done), p=pct(done,s.total);
+      return `<article class="panel subject">
+        <div class="subject-top"><div class="subject-name">${s.name}</div><div class="subject-percent">${p.toFixed(2)}%</div></div>
+        <div class="subject-times"><span>已完成：${fmt(done,false)}</span><span>总计：${fmt(s.total,false)}</span></div>
+        <div class="bar"><span style="width:${p}%;background:${s.color}"></span></div>
+        <div class="subject-times"><span>剩余：${fmt(left,false)}</span><span>${done>=s.total?'已完成':'继续累计'}</span></div>
+        <div class="add-row"><input class="duration" id="input-${s.id}" type="text" inputmode="decimal" placeholder="输入时长，如 1:30" aria-label="${s.name}本次增加时长" ${left===0?'disabled':''}><button class="primary add-btn" data-add="${s.id}" ${left===0?'disabled':''}>＋记录</button></div>
+        <div class="hint">支持 1:30（1小时30分）、1:30:00，或 1.5（小时）</div>
+      </article>`;
+    }).join('');
+    document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>addProgress(btn.dataset.add)));
+    document.querySelectorAll('.duration').forEach(input=>input.addEventListener('keydown',e=>{if(e.key==='Enter'){const id=input.id.replace('input-','');addProgress(id);}}));
+  }
+
+  function buildHistory() {
+    const today=localDate();
+    const elapsed=Math.max(0,dayDiff(state.startDate,today));
+    const maxDays=Math.min(elapsed+1,Math.max(1,state.cycleDays+1));
+    const byDate={};
+    state.logs.forEach(l=>{ byDate[l.date]=(byDate[l.date]||0)+l.seconds; });
+    let cumulative=0;
+    const points=[];
+    for(let i=0;i<maxDays;i++){
+      const date=addDays(state.startDate,i);
+      cumulative += byDate[date]||0;
+      const dLeft=state.cycleDays-i;
+      const left=Math.max(0,TOTAL-cumulative);
+      let value=null;
+      const isToday=date===today;
+      const todayHasProgress=(byDate[date]||0)>0;
+      const divisor=dLeft-(isToday && !todayHasProgress ? 0 : 1);
+      if(divisor>0) value=left/divisor;
+      else if(dLeft>0) value=left;
+      points.push({date,value,consumed:cumulative,day:dLeft});
+    }
+    return points;
+  }
+  function renderChart(history, baseline) {
+    const svg=$('trendChart'), W=720,H=220,L=73,R=14,T=15,B=34;
+    const valid=history.filter(p=>p.value!==null && Number.isFinite(p.value));
+    let values=valid.map(p=>p.value);
+    values.push(baseline);
+    if(values.length===0) values=[baseline];
+    // Include the live pace as well as all historical points. The vertical
+    // axis is recalculated on every render, so it follows the curve downward
+    // or upward without clipping values outside an earlier range.
+    const live=currentRate(totalDone()).value;
+    if(Number.isFinite(live)) values.push(live);
+    let min=Math.min(...values),max=Math.max(...values);
+    const spread=Math.max(120, max-min);
+    const padding=Math.max(60,spread*.22);
+    min=Math.max(0,min-padding); max=max+padding;
+    if(max-min<1) { min=Math.max(0,min-60); max=max+60; }
+    const x=i=> L+(history.length<=1?0:i*(W-L-R)/(history.length-1));
+    const y=v=> T+(max-v)*(H-T-B)/(max-min);
+    const baseY=y(baseline);
+    let out='';
+    // horizontal guides and left labels
+    for(let i=0;i<4;i++){
+      const v=min+(max-min)*i/3, yy=y(v);
+      out+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#edf0f5" stroke-width="1"/>`;
+      out+=`<text x="${L-8}" y="${yy+3}" text-anchor="end" fill="#718096" font-size="9">${fmtAxis(v)}</text>`;
+    }
+    out+=`<line x1="${L}" y1="${baseY}" x2="${W-R}" y2="${baseY}" stroke="#b58b39" stroke-width="1.4" stroke-dasharray="5 4"/>`;
+    if(valid.length){
+      const coords=valid.map(p=>({x:x(history.indexOf(p)),y:y(p.value),p}));
+      if(coords.length===1) out+=`<circle cx="${coords[0].x}" cy="${coords[0].y}" r="4" fill="#315bd6"/>`;
+      for(let i=1;i<coords.length;i++){
+        const a=coords[i-1],b=coords[i];
+        const color=b.p.value<a.p.value?'#15966a':b.p.value>a.p.value?'#d94b4b':'#7b8798';
+        out+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.4" stroke-linecap="round"/>`;
+        out+=`<circle cx="${b.x}" cy="${b.y}" r="2.4" fill="${color}"/>`;
+      }
+      const last=coords[coords.length-1];
+      out+=`<circle cx="${last.x}" cy="${last.y}" r="5" fill="#fff" stroke="${last.p.value<baseline?'#15966a':last.p.value>baseline?'#d94b4b':'#315bd6'}" stroke-width="2.5"/>`;
+    }
+    const labels=[];
+    if(history.length){
+      labels.push({i:0,t:'开始'});
+      if(history.length>3) labels.push({i:Math.floor((history.length-1)/2),t:'中段'});
+      if(history.length>1) labels.push({i:history.length-1,t:'今天'});
+    }
+    labels.forEach(o=>out+=`<text x="${x(o.i)}" y="${H-9}" text-anchor="${o.i===0?'start':o.i===history.length-1?'end':'middle'}" fill="#98a2b3" font-size="10">${o.t}</text>`);
+    svg.innerHTML=out;
+    $('chartRange').textContent=history.length>1?`${history.length}天记录`:'等待进度记录';
+  }
+
+  function renderLog() {
+    const list=$('logList');
+    const logs=[...state.logs].reverse().slice(0,16);
+    $('logCount').textContent=`${state.logs.length}条记录`;
+    if(!logs.length){list.innerHTML='<div class="empty">还没有学习记录。看完一段网课后，在对应科目输入时长即可。</div>';return;}
+    list.innerHTML=logs.map(l=>{
+      const subject=SUBJECTS.find(s=>s.id===l.subjectId);
+      return `<div class="log-item"><div><div class="log-main">${subject?subject.name:'科目'}</div><div class="log-date">${esc(l.date)} · ${esc(l.time||'')}</div></div><div class="log-add">+${fmt(l.seconds,false)}</div><span></span></div>`;
+    }).join('');
+  }
+
+  function render() {
+    const map=progressMap(), done=totalDone(map), left=Math.max(0,TOTAL-done);
+    const rate=currentRate(done), baseline=TOTAL/state.cycleDays;
+    $('totalTime').textContent=fmt(TOTAL,false);
+    $('doneTime').textContent=fmt(done,false);
+    $('leftTime').textContent=fmt(left,false);
+    $('totalPercent').textContent=pct(done,TOTAL).toFixed(2)+'%';
+    $('miniPercent').textContent=pct(done,TOTAL).toFixed(2)+'%';
+    $('initialPace').textContent=fmt(baseline,false);
+    $('daysLeft').textContent=rate.days+'天';
+    const today=localDate();
+    const todaySeconds=state.logs.filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
+    $('todayDone').textContent=fmt(todaySeconds,false);
+    const value=$('paceValue'), change=$('paceChange');
+    value.className='pace-value'; change.className='pace-change';
+    if(rate.status==='overdue'){
+      $('paceTitle').textContent='计划周期已结束'; value.textContent='已超出周期'; value.classList.add('up');
+      change.textContent=left>0?`仍有 ${fmt(left,false)} 未完成`:'全部完成'; change.classList.add(left>0?'up':'down');
+      $('paceNote').textContent='预设的207天统计周期已经结束。仍可继续记录实际完成情况。';
+    } else if(rate.status==='lastday') {
+      $('paceTitle').textContent='最后一天需要完成的剩余视频时长'; value.textContent=fmt(rate.value,false); value.classList.add('up');
+      change.textContent='最后一天 · 请完成剩余内容'; change.classList.add('up');
+      $('paceNote').textContent='今天是计划中的最后一天，显示的是全部剩余视频时长。';
+    } else {
+      const delta=rate.value-baseline;
+      const tolerance=1;
+      value.textContent=fmt(rate.value,false);
+      if(delta < -tolerance){ value.classList.add('down'); change.classList.add('down'); change.textContent=`↓ 比初始目标降低 ${fmt(-delta,false)}`; }
+      else if(delta > tolerance){ value.classList.add('up'); change.classList.add('up'); change.textContent=`↑ 比初始目标增加 ${fmt(delta,false)}`; }
+      else { value.classList.add('neutral'); change.classList.add('neutral'); change.textContent='与初始目标基本持平'; }
+      $('paceTitle').textContent='按当前进度，未来每天需要完成';
+      $('paceNote').textContent='首次打开时按总时长 ÷ 207天计算初始目标；录入当天学习时间后，立即按剩余视频时长 ÷ 今天之后的剩余天数重新结算。低于初始目标变绿，高于初始目标变红。';
+    }
+    renderSubjects(map);
+    renderLog();
+    renderChart(buildHistory(),baseline);
+    saveState();
+  }
+
+  function addProgress(subjectId) {
+    const subject=SUBJECTS.find(s=>s.id===subjectId); if(!subject)return;
+    const input=$(`input-${subjectId}`); if(!input)return;
+    const seconds=parseDuration(input.value);
+    if(seconds===null){showToast('时长格式不正确，请输入 1:30 或 1.5');input.focus();return;}
+    const map=progressMap(), remaining=subject.total-map[subjectId];
+    if(seconds>remaining){showToast(`这科只剩 ${fmt(remaining,false)}，本次输入超出了课程总时长。`);return;}
+    const now=new Date();
+    state.logs.push({subjectId,seconds,date:localDate(now),time:now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})});
+    input.value=''; render(); showToast(`${subject.name}已增加 ${fmt(seconds,false)}，总进度已更新。`);
+  }
+
+  $('undoBtn').addEventListener('click',()=>{
+    if(!state.logs.length){showToast('目前没有可以撤销的记录。');return;}
+    const last=state.logs[state.logs.length-1], s=SUBJECTS.find(x=>x.id===last.subjectId);
+    if(!confirm(`撤销最近一条记录：${s?s.name:'科目'} +${fmt(last.seconds,false)}？`))return;
+    state.logs.pop(); render(); showToast('已撤销最近一条记录。');
+  });
+  $('resetBtn').addEventListener('click',()=>{
+    if(!confirm('确定清空所有科目进度和学习记录吗？此操作不可撤销。'))return;
+    state={startDate:localDate(),cycleDays:DEFAULT_DAYS,logs:[]};render();showToast('进度已重置，重新从0开始。');
+  });
+
+  state=loadLocalState();
+  // Ask the browser to protect this site's storage from routine eviction where supported.
+  // This does not prevent deliberate clearing of browser/site data.
+  try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist().then(granted=>console.info('持久化存储：',granted?'已获准':'浏览器未授予')).catch(e=>console.warn('持久化存储申请失败',e)); } catch(e) {}
+
+  async function initialize() {
+    // Check the independent IndexedDB copy before rendering or writing defaults.
+    const restored=await recoverFromIndexedBackup();
+    if(!state) state={startDate:localDate(),cycleDays:DEFAULT_DAYS,logs:[],updatedAt:Date.now()};
+    if(!Array.isArray(state.logs)) state.logs=[];
+    render();
+    if(restored) showToast('已从浏览器自动备份恢复较新的学习记录。');
+
+    // Keep the countdown synchronized with the browser's local calendar date.
+    // A page left open across midnight otherwise keeps showing yesterday's render.
+    let lastRenderedDate = localDate();
+    function refreshIfDateChanged() {
+      const today = localDate();
+      if (today !== lastRenderedDate) {
+        lastRenderedDate = today;
+        render();
+      }
+    }
+    setInterval(refreshIfDateChanged, 30000);
+    window.addEventListener('focus', refreshIfDateChanged);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshIfDateChanged();
+    });
+  }
+  initialize();
+
+  // Register the offline app shell on the hosted HTTPS origin.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(reg => console.info('离线缓存已启用：', reg.scope))
+        .catch(err => console.warn('离线缓存注册失败：', err));
+    });
+  }
+})();
+</script>
+</body>
+</html>
