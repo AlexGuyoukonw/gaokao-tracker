@@ -85,8 +85,8 @@
   <header class="top">
     <div>
       <h1>2027 高考 · 基础学习进度表</h1>
-      <div class="subtitle">只统计基础学习视频时长｜首次打开自动开始207天周期｜每次录入后即时结算</div>
-      <div style="margin-top:10px"><span class="pill">● 默认207天 · 基础学习专用 · 不含一轮 / 二轮</span></div>
+      <div class="subtitle">只统计基础学习视频时长｜从2026年11月26日开始记录｜倒计时至山东夏季高考</div>
+      <div style="margin-top:10px"><span class="pill">● 目标考试：2027年6月7日 · 山东夏季高考</span></div>
     </div>
     <div class="actions">
       <button id="resetBtn" class="ghost-red">重置进度</button>
@@ -137,7 +137,7 @@
       <div class="log-list" id="logList"></div>
     </div>
   </section>
-  <div class="footer">默认从首次打开当天开始统计，周期为207天；学习进度自动保存在当前浏览器。基础学习统计口径：语文第一版 · 数学 · 物理 · 化学 · 生物。</div>
+  <div class="footer">目标日期暂按2027年6月7日首场考试计算（2027年具体日程以官方通知为准）；学习进度自动保存在当前浏览器。基础学习统计口径：语文第一版 · 数学 · 物理 · 化学 · 生物。</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -157,7 +157,8 @@
     { id:'biology', name:'生物', total:88*3600+27*60+29, color:'#38976a' }
   ];
   const TOTAL = SUBJECTS.reduce((s,x)=>s+x.total,0);
-  const DEFAULT_DAYS = 207;
+  const EXAM_DATE = '2027-06-07';
+  function cycleLengthFrom(startDate) { return Math.max(1, dayDiff(startDate, EXAM_DATE) + 1); }
   const $ = id => document.getElementById(id);
   let state;
   let toastTimer;
@@ -238,8 +239,8 @@
   }
   function totalDone(map=progressMap()) { return Object.values(map).reduce((a,b)=>a+b,0); }
   function remainingDays(onDate=localDate()) {
-    const elapsed=dayDiff(state.startDate,onDate);
-    return Math.max(0,state.cycleDays-elapsed);
+    // Count today as an available study day; the target is the first exam day.
+    return Math.max(0,dayDiff(onDate,EXAM_DATE)+1);
   }
   function currentRate(done) {
     const days=remainingDays();
@@ -409,7 +410,7 @@
     if(rate.status==='overdue'){
       $('paceTitle').textContent='计划周期已结束'; value.textContent='已超出周期'; value.classList.add('up');
       change.textContent=left>0?`仍有 ${fmt(left,false)} 未完成`:'全部完成'; change.classList.add(left>0?'up':'down');
-      $('paceNote').textContent='预设的207天统计周期已经结束。仍可继续记录实际完成情况。';
+      $('paceNote').textContent='距离设定的高考首日已到或超过。仍可继续记录实际完成情况。';
     } else if(rate.status==='lastday') {
       $('paceTitle').textContent='最后一天需要完成的剩余视频时长'; value.textContent=fmt(rate.value,false); value.classList.add('up');
       change.textContent='最后一天 · 请完成剩余内容'; change.classList.add('up');
@@ -422,7 +423,7 @@
       else if(delta > tolerance){ value.classList.add('up'); change.classList.add('up'); change.textContent=`↑ 比初始目标增加 ${fmt(delta,false)}`; }
       else { value.classList.add('neutral'); change.classList.add('neutral'); change.textContent='与初始目标基本持平'; }
       $('paceTitle').textContent='按当前进度，未来每天需要完成';
-      $('paceNote').textContent='首次打开时按总时长 ÷ 207天计算初始目标；录入当天学习时间后，立即按剩余视频时长 ÷ 今天之后的剩余天数重新结算。低于初始目标变绿，高于初始目标变红。';
+      $('paceNote').textContent='初始目标按总时长 ÷ 从开始记录日至2027年6月7日的备考天数计算；录入当天学习时间后，立即按剩余视频时长 ÷ 今天之后的剩余天数重新结算。低于初始目标变绿，高于初始目标变红。';
     }
     renderSubjects(map);
     renderLog();
@@ -450,7 +451,7 @@
   });
   $('resetBtn').addEventListener('click',()=>{
     if(!confirm('确定清空所有科目进度和学习记录吗？此操作不可撤销。'))return;
-    state={startDate:localDate(),cycleDays:DEFAULT_DAYS,logs:[]};render();showToast('进度已重置，重新从0开始。');
+    state={...state,logs:[]};render();showToast('学习记录已清空，考试倒计时和开始日期保持不变。');
   });
 
   state=loadLocalState();
@@ -463,6 +464,8 @@
     const restored=await recoverFromIndexedBackup();
     if(!state) state={startDate:localDate(),cycleDays:DEFAULT_DAYS,logs:[],updatedAt:Date.now()};
     if(!Array.isArray(state.logs)) state.logs=[];
+    // Recalculate the original cycle length from the saved start date and the fixed exam date.
+    state.cycleDays=cycleLengthFrom(state.startDate);
     render();
     if(restored) showToast('已从浏览器自动备份恢复较新的学习记录。');
 
