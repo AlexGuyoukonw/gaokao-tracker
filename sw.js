@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gaokao-tracker-shell-v1';
+const CACHE_NAME = 'gaokao-tracker-shell-v2';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './import.html', './icon.svg'];
 
 self.addEventListener('install', event => {
