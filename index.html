@@ -109,7 +109,7 @@
       <div class="pace-note" id="paceNote">每次录入都会立即更新。今天学得越多，未来日均要求越低；某天结束时进度不足，次日要求会升高。</div>
       <div class="pace-stats">
         <div class="mini"><span>最初每日目标</span><strong id="initialPace">—</strong></div>
-        <div class="mini"><span>剩余备考天数（含今天）</span><strong id="daysLeft">—</strong></div>
+        <div class="mini"><span>剩余备考天数（不含今天）</span><strong id="daysLeft">—</strong></div>
         <div class="mini"><span>今日已录入</span><strong id="todayDone">0分钟</strong></div>
         <div class="mini"><span>当前累计完成率</span><strong id="miniPercent">0.00%</strong></div>
       </div>
@@ -155,7 +155,7 @@
   ];
   const TOTAL = SUBJECTS.reduce((s,x)=>s+x.total,0);
   const EXAM_DATE = '2027-06-07';
-  function cycleLengthFrom(startDate) { return Math.max(1, dayDiff(startDate, EXAM_DATE) + 1); }
+  function cycleLengthFrom(startDate) { return Math.max(1, dayDiff(startDate, EXAM_DATE)); }
   const $ = id => document.getElementById(id);
   let state;
   let toastTimer;
@@ -237,18 +237,15 @@
   }
   function totalDone(map=progressMap()) { return Object.values(map).reduce((a,b)=>a+b,0); }
   function remainingDays(onDate=localDate()) {
-    // Count today as an available study day; the target is the first exam day.
-    return Math.max(0,dayDiff(onDate,EXAM_DATE)+1);
+    // Count full calendar days after today until the first exam day; today is not included.
+    return Math.max(0,dayDiff(onDate,EXAM_DATE));
   }
   function currentRate(done) {
     const days=remainingDays();
     const left=Math.max(0,TOTAL-done);
     if(days<=0) return {value:null,days,left,status:'overdue'};
-    const today=localDate();
-    const todayDone=activeLogs().filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
-    // On a fresh day, today's time is still available: include today in the divisor.
-    // Once the user records today's study, calculate the pace needed after today ends.
-    const divisor=todayDone>0 ? days-1 : days;
+    // "Remaining days" excludes today, so the required future daily pace divides by days directly.
+    const divisor=days;
     if(divisor<=0) return {value:left,days,left,status:'lastday'};
     return {value:left/divisor,days,left,status:'normal'};
   }
