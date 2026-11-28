@@ -85,7 +85,7 @@
   <header class="top">
     <div>
       <h1>2027 高考 · 数学物理基础学习进度表</h1>
-      <div class="subtitle">只统计基础学习视频时长｜从2026年11月26日开始记录｜倒计时至山东夏季高考</div>
+      <div class="subtitle">只统计本年度数学、物理基础学习视频时长｜自动按首次记录日期开始计算｜倒计时至山东夏季高考</div>
       <div style="margin-top:10px"><span class="pill">● 目标考试：2027年6月7日 · 山东夏季高考</span></div>
     </div>
     <div class="actions">
@@ -452,7 +452,7 @@
     state.logs.splice(index,1); render(); showToast('已撤销最近一条记录。');
   });
   $('resetBtn').addEventListener('click',()=>{
-    if(!confirm('确定清空所有科目进度和学习记录吗？此操作不可撤销。'))return;
+    if(!confirm('确定清空数学、物理的进度和学习记录吗？此操作不可撤销。'))return;
     state={...state,logs:[]};render();showToast('学习记录已清空，考试倒计时和开始日期保持不变。');
   });
 
