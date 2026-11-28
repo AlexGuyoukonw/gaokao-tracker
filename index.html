@@ -127,7 +127,7 @@
 
   <div class="subjects-head">
     <div><h2>各科基础学习进度</h2><p>在每科输入本次看完的网课时长，点击“＋记录”即可即时结算。</p></div>
-    <div class="muted-small">时间格式：1:30 = 1小时30分</div>
+    <div class="muted-small">时间格式：01:30 = 1分30秒；01:30:00 = 1小时30分</div>
   </div>
   <section class="subject-grid" id="subjectGrid"></section>
 
@@ -280,8 +280,15 @@
     const parts=v.split(':');
     if((parts.length!==2 && parts.length!==3) || !parts.every(x=>/^\d+$/.test(x))) return null;
     const nums=parts.map(Number);
-    if(nums[1]>59 || (parts.length===3 && nums[2]>59)) return null;
-    const sec=parts.length===2 ? nums[0]*3600+nums[1]*60 : nums[0]*3600+nums[1]*60+nums[2];
+    if(parts.length===2) {
+      // mm:ss — two fields always mean minutes and seconds.
+      if(nums[1]>59) return null;
+      const sec=nums[0]*60+nums[1];
+      return sec>0?sec:null;
+    }
+    // hh:mm:ss — three fields always mean hours, minutes and seconds.
+    if(nums[1]>59 || nums[2]>59) return null;
+    const sec=nums[0]*3600+nums[1]*60+nums[2];
     return sec>0?sec:null;
   }
   function showToast(msg) {
@@ -298,8 +305,8 @@
         <div class="subject-times"><span>已完成：${fmt(done,false)}</span><span>总计：${fmt(s.total,false)}</span></div>
         <div class="bar"><span style="width:${p}%;background:${s.color}"></span></div>
         <div class="subject-times"><span>剩余：${fmt(left,false)}</span><span>${done>=s.total?'已完成':'继续累计'}</span></div>
-        <div class="add-row"><input class="duration" id="input-${s.id}" type="text" inputmode="decimal" placeholder="输入时长，如 1:30" aria-label="${s.name}本次增加时长" ${left===0?'disabled':''}><button class="primary add-btn" data-add="${s.id}" ${left===0?'disabled':''}>＋记录</button></div>
-        <div class="hint">支持 1:30（1小时30分）、1:30:00，或 1.5（小时）</div>
+        <div class="add-row"><input class="duration" id="input-${s.id}" type="text" inputmode="decimal" placeholder="输入时长，如 01:30（分:秒）" aria-label="${s.name}本次增加时长" ${left===0?'disabled':''}><button class="primary add-btn" data-add="${s.id}" ${left===0?'disabled':''}>＋记录</button></div>
+        <div class="hint">支持 01:30（1分30秒）或 01:30:00（1小时30分）</div>
       </article>`;
     }).join('');
     document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>addProgress(btn.dataset.add)));
@@ -434,7 +441,7 @@
     const subject=SUBJECTS.find(s=>s.id===subjectId); if(!subject)return;
     const input=$(`input-${subjectId}`); if(!input)return;
     const seconds=parseDuration(input.value);
-    if(seconds===null){showToast('时长格式不正确，请输入 1:30 或 1.5');input.focus();return;}
+    if(seconds===null){showToast('格式不正确：两段式用 分:秒（如 01:30），三段式用 时:分:秒（如 01:30:00）');input.focus();return;}
     const map=progressMap(), remaining=subject.total-map[subjectId];
     if(seconds>remaining){showToast(`这科只剩 ${fmt(remaining,false)}，本次输入超出了课程总时长。`);return;}
     const now=new Date();
