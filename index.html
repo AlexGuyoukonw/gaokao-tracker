@@ -94,10 +94,10 @@
   </header>
 
   <section class="kpis">
-    <div class="panel kpi"><div class="kpi-label">基础学习总时长</div><div class="kpi-value" id="totalTime">—</div><div class="kpi-sub">五科合计 · 只计算一次</div></div>
+    <div class="panel kpi"><div class="kpi-label">基础学习总时长</div><div class="kpi-value" id="totalTime">—</div><div class="kpi-sub">数学、物理合计 · 只计算一次</div></div>
     <div class="panel kpi"><div class="kpi-label">已完成视频时长</div><div class="kpi-value" id="doneTime">—</div><div class="kpi-sub" id="doneSub">累计录入的学习时间</div></div>
     <div class="panel kpi"><div class="kpi-label">剩余视频时长</div><div class="kpi-value" id="leftTime">—</div><div class="kpi-sub">按各科目标时长扣减</div></div>
-    <div class="panel kpi"><div class="kpi-label">总完成率</div><div class="kpi-value" id="totalPercent">0.00%</div><div class="kpi-sub">五科已完成 ÷ 五科总时长</div></div>
+    <div class="panel kpi"><div class="kpi-label">总完成率</div><div class="kpi-value" id="totalPercent">0.00%</div><div class="kpi-sub">数学、物理已完成 ÷ 两科总时长</div></div>
   </section>
 
   <section class="main-grid">
@@ -137,7 +137,7 @@
       <div class="log-list" id="logList"></div>
     </div>
   </section>
-  <div class="footer">目标日期暂按2027年6月7日首场考试计算（2027年具体日程以官方通知为准）；学习进度自动保存在当前浏览器。基础学习统计口径：语文第一版 · 数学 · 物理 · 化学 · 生物。</div>
+  <div class="footer">目标日期暂按2027年6月7日首场考试计算（2027年具体日程以官方通知为准）；学习进度自动保存在当前浏览器。本年度基础学习统计口径：数学、物理。</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -150,11 +150,8 @@
   const DB_STORE = 'snapshots';
   const DB_RECORD = 'latest';
   const SUBJECTS = [
-    { id:'chinese', name:'语文', total:92*3600+10*60+25, color:'#9a5bc2' },
     { id:'math', name:'数学', total:363*3600+38*60+9, color:'#3973c9' },
-    { id:'physics', name:'物理', total:217*3600+12*60+46, color:'#218e9b' },
-    { id:'chemistry', name:'化学', total:149*3600+6*60+5, color:'#d18b35' },
-    { id:'biology', name:'生物', total:88*3600+27*60+29, color:'#38976a' }
+    { id:'physics', name:'物理', total:217*3600+12*60+46, color:'#218e9b' }
   ];
   const TOTAL = SUBJECTS.reduce((s,x)=>s+x.total,0);
   const EXAM_DATE = '2027-06-07';
@@ -232,9 +229,10 @@
     } catch(e) { console.warn('IndexedDB恢复检查失败',e); }
     return false;
   }
+  function activeLogs() { return state.logs.filter(l=>SUBJECTS.some(s=>s.id===l.subjectId)); }
   function progressMap() {
     const map={}; SUBJECTS.forEach(s=>map[s.id]=0);
-    state.logs.forEach(l=>{ if(map[l.subjectId]!==undefined) map[l.subjectId]+=l.seconds; });
+    activeLogs().forEach(l=>{ if(map[l.subjectId]!==undefined) map[l.subjectId]+=l.seconds; });
     return map;
   }
   function totalDone(map=progressMap()) { return Object.values(map).reduce((a,b)=>a+b,0); }
@@ -247,7 +245,7 @@
     const left=Math.max(0,TOTAL-done);
     if(days<=0) return {value:null,days,left,status:'overdue'};
     const today=localDate();
-    const todayDone=state.logs.filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
+    const todayDone=activeLogs().filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
     // On a fresh day, today's time is still available: include today in the divisor.
     // Once the user records today's study, calculate the pace needed after today ends.
     const divisor=todayDone>0 ? days-1 : days;
@@ -313,7 +311,7 @@
     const elapsed=Math.max(0,dayDiff(state.startDate,today));
     const maxDays=Math.min(elapsed+1,Math.max(1,state.cycleDays+1));
     const byDate={};
-    state.logs.forEach(l=>{ byDate[l.date]=(byDate[l.date]||0)+l.seconds; });
+    activeLogs().forEach(l=>{ byDate[l.date]=(byDate[l.date]||0)+l.seconds; });
     let cumulative=0;
     const points=[];
     for(let i=0;i<maxDays;i++){
@@ -383,8 +381,9 @@
 
   function renderLog() {
     const list=$('logList');
-    const logs=[...state.logs].reverse().slice(0,16);
-    $('logCount').textContent=`${state.logs.length}条记录`;
+    const visibleLogs=activeLogs();
+    const logs=[...visibleLogs].reverse().slice(0,16);
+    $('logCount').textContent=`${visibleLogs.length}条记录`;
     if(!logs.length){list.innerHTML='<div class="empty">还没有学习记录。看完一段网课后，在对应科目输入时长即可。</div>';return;}
     list.innerHTML=logs.map(l=>{
       const subject=SUBJECTS.find(s=>s.id===l.subjectId);
@@ -403,7 +402,7 @@
     $('initialPace').textContent=fmt(baseline,false);
     $('daysLeft').textContent=rate.days+'天';
     const today=localDate();
-    const todaySeconds=state.logs.filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
+    const todaySeconds=activeLogs().filter(l=>l.date===today).reduce((a,l)=>a+l.seconds,0);
     $('todayDone').textContent=fmt(todaySeconds,false);
     const value=$('paceValue'), change=$('paceChange');
     value.className='pace-value'; change.className='pace-change';
@@ -445,9 +444,12 @@
 
   $('undoBtn').addEventListener('click',()=>{
     if(!state.logs.length){showToast('目前没有可以撤销的记录。');return;}
-    const last=state.logs[state.logs.length-1], s=SUBJECTS.find(x=>x.id===last.subjectId);
+    let index=-1;
+    for(let i=state.logs.length-1;i>=0;i--){ if(SUBJECTS.some(s=>s.id===state.logs[i].subjectId)){index=i;break;} }
+    if(index<0){showToast('目前没有可以撤销的记录。');return;}
+    const last=state.logs[index], s=SUBJECTS.find(x=>x.id===last.subjectId);
     if(!confirm(`撤销最近一条记录：${s?s.name:'科目'} +${fmt(last.seconds,false)}？`))return;
-    state.logs.pop(); render(); showToast('已撤销最近一条记录。');
+    state.logs.splice(index,1); render(); showToast('已撤销最近一条记录。');
   });
   $('resetBtn').addEventListener('click',()=>{
     if(!confirm('确定清空所有科目进度和学习记录吗？此操作不可撤销。'))return;
@@ -462,7 +464,7 @@
   async function initialize() {
     // Check the independent IndexedDB copy before rendering or writing defaults.
     const restored=await recoverFromIndexedBackup();
-    if(!state) state={startDate:localDate(),cycleDays:DEFAULT_DAYS,logs:[],updatedAt:Date.now()};
+    if(!state) state={startDate:localDate(),cycleDays:cycleLengthFrom(localDate()),logs:[],updatedAt:Date.now()};
     if(!Array.isArray(state.logs)) state.logs=[];
     // Recalculate the original cycle length from the saved start date and the fixed exam date.
     state.cycleDays=cycleLengthFrom(state.startDate);
